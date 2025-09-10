@@ -17,6 +17,7 @@ contract Raffle is VRFConsumerBaseV2Plus{
     error Raffle__NotEnoughETHEntered();
     error Raffle__TransferFailed();
     error Raffle__RaffleNotOpen();
+    error Raffle__RequirementNotMet(uint256 currentBalance, uint256 numPlayers, uint256 raffleState);
 
 
     //Type Decalarations (Since bool is not enough for future use cases)
@@ -91,8 +92,9 @@ contract Raffle is VRFConsumerBaseV2Plus{
     function performUpkeep(bytes calldata) external {
         (bool upkeepNeeded,) = checkUpkeep("");
         if (!upkeepNeeded){
-            revert Raffle__RaffleNotOpen();
+            revert Raffle__RequirementNotMet(address(this).balance, s_players.length, uint256(s_RaffleState));
         }
+
         s_RaffleState = RaffleState.CALCULATING;
 
         // Source: https://docs.chain.link/vrf/v2-5/getting-started
@@ -109,10 +111,10 @@ contract Raffle is VRFConsumerBaseV2Plus{
             )
             }
         );
-        uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
+        s_vrfCoordinator.requestRandomWords(request);
     }
 
-    function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override{
+    function fulfillRandomWords(uint256 /*requestId,*/, uint256[] calldata randomWords) internal override{
         uint256 indexofWinner = randomWords[0] % s_players.length;
         address payable recentWinner = s_players[indexofWinner];
 
