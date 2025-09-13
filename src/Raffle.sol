@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
@@ -44,6 +44,7 @@ contract Raffle is VRFConsumerBaseV2Plus{
 
     event RaffleEntered(address indexed player);
     event WinnerPicked(address indexed winner);
+    event RequestedRaffleWinner(uint256 indexed requestId);
 
     constructor(uint256 entranceFee, uint256 interval, address vrfCoordinator, bytes32 gasLane, uint256 subId, uint32 gasLimit) VRFConsumerBaseV2Plus(vrfCoordinator){
         i_entranceFee = entranceFee;
@@ -65,7 +66,7 @@ contract Raffle is VRFConsumerBaseV2Plus{
             revert Raffle__NotEnoughETHEntered();
         }
 
-        if (s_RaffleState !=RaffleState.OPEN){
+        if (s_RaffleState != RaffleState.OPEN){
             revert Raffle__RaffleNotOpen();
         }
 
@@ -111,7 +112,8 @@ contract Raffle is VRFConsumerBaseV2Plus{
             )
             }
         );
-        s_vrfCoordinator.requestRandomWords(request);
+        uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
+        emit RequestedRaffleWinner(requestId);
     }
 
     function fulfillRandomWords(uint256 /*requestId,*/, uint256[] calldata randomWords) internal override{
@@ -135,5 +137,21 @@ contract Raffle is VRFConsumerBaseV2Plus{
 
     function getEntranceFee() external view returns (uint256) {
         return i_entranceFee;
+    }
+
+    function getRaffleState() external view returns (RaffleState) {
+        return s_RaffleState;
+    }
+
+    function getPlayer(uint256 indexofPlayer) external view returns (address) {
+        return s_players[indexofPlayer];
+    }
+
+    function getLastTimeStamp() external view returns(uint256){
+        return s_lastTimeStamp;
+    }
+
+    function getRecentWinner() external view returns(address) {
+        return s_recentWinner;
     }
 }
