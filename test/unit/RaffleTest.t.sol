@@ -7,8 +7,9 @@ import {Raffle} from "src/Raffle.sol";
 import {HelperConfig} from "script/HelperConfig.s.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
+import {CodeConstants} from "script/HelperConfig.s.sol";
 
-contract RaffleTest is Test {
+contract RaffleTest is Test, CodeConstants {
     Raffle public raffle;
     HelperConfig public helperConfig;
 
@@ -21,9 +22,17 @@ contract RaffleTest is Test {
     bytes32 gasLane;
     uint256 subscriptionId;
     uint32 callbackGasLimit;
+    address account;
 
     address public PLAYER = makeAddr("player");
     uint256 public constant STARTING_USER_BALANCE = 10 ether;
+
+    modifier skipFork() {
+        if (block.chainid != LOCAL_CHAIN_ID){
+            return;
+        }
+        _;
+    }
 
     function setUp() external {
         DeployRaffle deployer = new DeployRaffle();
@@ -36,7 +45,6 @@ contract RaffleTest is Test {
         gasLane = config.gasLane;
         subscriptionId = config.subscriptionId;
         callbackGasLimit = config.callbackGasLimit;
-
         vm.deal(PLAYER, STARTING_USER_BALANCE);
     }
 
@@ -185,14 +193,14 @@ contract RaffleTest is Test {
                            FULFILLRANDOMWORDS
     //////////////////////////////////////////////////////////////*/
 
-    function testFulfillRandomeWordsCanOnlyBeCalledAfterPerformUpkeep(uint256 RandomRequestId) public RaffleEnteredAndTimePassed {
+    function testFulfillRandomeWordsCanOnlyBeCalledAfterPerformUpkeep(uint256 RandomRequestId) public RaffleEnteredAndTimePassed skipFork{
         // Arrange / Act / Assert
 
         vm.expectRevert(VRFCoordinatorV2_5Mock.InvalidRequest.selector);
         VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(RandomRequestId, address(raffle));
     }
 
-    function testFulfillRandomWordsPickAWinnerResetsAndSendsMoney() public RaffleEnteredAndTimePassed {
+    function testFulfillRandomWordsPickAWinnerResetsAndSendsMoney() public RaffleEnteredAndTimePassed skipFork{
         // Arrange
         uint256 additionalEntrants = 5;
         uint256 startingIndex = 1;

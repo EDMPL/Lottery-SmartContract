@@ -26,6 +26,7 @@ contract HelperConfig is CodeConstants, Script{
         uint256 subscriptionId;
         uint32 callbackGasLimit;
         address link;
+        address account;
     }
 
     NetworkConfig public activeNetworkConfig;
@@ -55,11 +56,12 @@ contract HelperConfig is CodeConstants, Script{
         return NetworkConfig({
             entranceFee: 0.01 ether, //1e16
             interval: 30, //seconds
-            vrfCoordinator: 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625, // https://docs.chain.link/vrf/v2/subscription/supported-networks
-            gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c, // https://docs.chain.link/vrf/v2/subscription/supported-networks
-            subscriptionId: 0, // Will be set up later
+            vrfCoordinator: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B, // https://docs.chain.link/vrf/v2-5/supported-networks#ethereum-sepolia-testnet
+            gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae, // https://docs.chain.link/vrf/v2-5/supported-networks#ethereum-sepolia-testnet
+            subscriptionId: 114985517424144402947386292587658918584865960761088278321678044314686071095947, //  Setup from VRF Chainlink Website
             callbackGasLimit: 500000, // 500,000 gas
-            link: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+            link: 0x779877A7B0D9E8603169DdbD7836e478b4624789,
+            account: 0xc7B59145C84361b8F366C1750B1ab080dBF01deB
         });
     }
 
@@ -80,7 +82,8 @@ contract HelperConfig is CodeConstants, Script{
             gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c, // does not mater
             subscriptionId: 0, // subId
             callbackGasLimit: 500000, // 500,000 gas
-            link: address(link)
+            link: address(link),
+            account: 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38 // DEFAULT SENDER FROM forge-std/Base.sol
         });
         return activeNetworkConfig;
     }
